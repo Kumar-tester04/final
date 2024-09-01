@@ -17,16 +17,24 @@
         color: #fff;
     }
     header {
-        background-color: rgba(0, 0, 0, 0.8);
-        padding: 10px 20px;
+        background: linear-gradient(90deg, #5ABF3F, #4a9c35);
+        border: 2px solid #5ABF3F;
+        padding: 20px 40px;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        border-radius: 10px;
+        margin: 20px;
+        transition: transform 0.3s ease-in-out;
+    }
+    header:hover {
+        transform: perspective(600px) rotateX(5deg) rotateY(5deg);
     }
     header h1 {
         margin: 0;
         font-family: 'Montserrat', sans-serif;
-        color: #ffd700;
+        color: #fff;
     }
     nav {
         display: flex;
@@ -36,9 +44,14 @@
         color: #fff;
         text-decoration: none;
         font-weight: bold;
+        padding: 10px 20px;
+        border-radius: 5px;
+        background: rgba(0, 0, 0, 0.6);
+        transition: background-color 0.3s ease;
     }
     nav a:hover {
-        color: #ffd700;
+        background-color: #5ABF3F;
+        color: #fff;
     }
     .container {
         display: none;
@@ -63,7 +76,7 @@
     h2 {
         margin-bottom: 20px;
         font-family: 'Montserrat', sans-serif;
-        color: #ffd700;
+        color: #5ABF3F;
     }
     input[type="text"], input[type="password"], input[type="email"], input[type="tel"], input[type="submit"], input[type="button"] {
         margin-top: 15px;
@@ -75,14 +88,14 @@
         font-size: 16px;
     }
     input[type="submit"], input[type="button"] {
-        background-color: #ffd700;
+        background-color: #5ABF3F;
         color: #000;
         border: none;
         cursor: pointer;
         font-weight: bold;
     }
     input[type="submit"]:hover, input[type="button"]:hover {
-        background-color: #ffcc00;
+        background-color: #4a9d30;
     }
     footer {
         background-color: rgba(0, 0, 0, 0.8);
@@ -169,9 +182,13 @@
 <div class="container" id="contact-container">
     <div class="content">
         <h2>Contact Us</h2>
-        <p>Have any questions? Reach out to us at:</p>
-        <p>Email: support@selfbilling.com</p>
-        <p>Phone: +91 93749 26583</p>
+        <form id="contact-form">
+            <input type="text" id="contact-name" placeholder="Your Name" required><br>
+            <input type="email" id="contact-email" placeholder="Your Email" required><br>
+            <input type="text" id="contact-subject" placeholder="Subject" required><br>
+            <textarea id="contact-message" rows="5" placeholder="Your Message" required></textarea><br>
+            <input type="submit" value="Send Message">
+        </form>
     </div>
 </div>
 
@@ -227,28 +244,35 @@
         changeBackground(containerId);
     }
 
-    function changeBackground(containerId) {
-        switch (containerId) {
-            case 'home-container':
-                document.body.style.backgroundImage = "url('https://source.unsplash.com/1600x900/?home')";
-                break;
-            case 'login-container':
-                document.body.style.backgroundImage = "url('https://source.unsplash.com/1600x900/?login')";
-                break;
-            case 'register-container':
-                document.body.style.backgroundImage = "url('https://source.unsplash.com/1600x900/?signup')";
-                break;
-            case 'about-container':
-                document.body.style.backgroundImage = "url('https://source.unsplash.com/1600x900/?about')";
-                break;
-            case 'contact-container':
-                document.body.style.backgroundImage = "url('https://source.unsplash.com/1600x900/?contact')";
-                break;
-            default:
-                document.body.style.backgroundImage = "url('https://source.unsplash.com/1600x900/?default')";
-                break;
-        }
+   function changeBackground(containerId) {
+    let imageUrl;
+    
+    switch (containerId) {
+        case 'home-container':
+            imageUrl = "https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg";
+            break;
+        case 'login-container':
+            imageUrl = "https://images.pexels.com/photos/1181351/pexels-photo-1181351.jpeg";
+            break;
+        case 'register-container':
+            imageUrl = "https://images.pexels.com/photos/1444180/pexels-photo-1444180.jpeg";
+            break;
+        case 'about-container':
+            imageUrl = "https://images.pexels.com/photos/3757508/pexels-photo-3757508.jpeg";
+            break;
+        case 'contact-container':
+            imageUrl = "https://images.pexels.com/photos/3288130/pexels-photo-3288130.jpeg";
+            break;
+        default:
+            imageUrl = "https://images.pexels.com/photos/1857342/pexels-photo-1857342.jpeg"; // Default image
+            break;
     }
+    
+    // Check if imageUrl is defined and not empty
+    if (imageUrl) {
+        document.body.style.backgroundImage = `url('${imageUrl}')`;
+    }
+}
 
     // Initialize with home container visible
     showContainer('home-container');
