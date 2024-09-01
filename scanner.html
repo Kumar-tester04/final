@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Scanner</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        #interactive {
+            width: 640px;
+            height: 480px;
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+            background-color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        #interactive video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #start-button, #stop-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #start-button:hover, #stop-button:hover {
+            background-color: #45a049;
+        }
+
+        #stop-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #scanned-products-container {
+            width: 640px;
+            max-height: 300px;
+            overflow-y: scroll;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        #scanned-products {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #scanned-products li {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f9f9f9;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-info {
+            text-align: left;
+            flex-grow: 1;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+        }
+
+        .quantity-controls button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .quantity-controls button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Barcode Scanner</h1>
+    <div id="interactive">
+        <video id="video" autoplay></video>
+    </div>
+    <div id="controls">
+        <button id="start-button">Start Scanning</button>
+        <button id="stop-button" disabled>Stop Scanning</button>
+    </div>
+    <div id="scanned-products-container">
+        <ul id="scanned-products"></ul>
+    </div>
+    <script src="https://unpkg.com/@zxing/library@latest"></script>
+    <script>
+        const codeReader = new ZXing.BrowserMultiFormatReader();
+        const videoElement = document.getElementById('video');
+        const startButton = document.getElementById('start-button');
+        const stopButton = document.getElementById('stop-button');
+        const scannedProductsList = document.getElementById('scanned-products');
+
+        let scanning = false;
+
+        function startScanning() {
+            scanning = true;
+            startButton.disabled = true;
+            stopButton.disabled = false;
+
+            codeReader
+                .listVideoInputDevices()
+                .then((videoInputDevices) => {
+                    const firstDeviceId = videoInputDevices[0].deviceId;
+                    return codeReader.decodeFromVideoDevice(firstDeviceId, videoElement, (result, error) => {
+                        if (result) {
+                            handleScanResult(result.text);
+                        }
+                        if (error && !(error instanceof ZXing.NotFoundException)) {
+                            console.error(error);
+                        }
+                    });
+                })
+                .catch((err) => {
+                    console.error(err);
+                });
+        }
+
+        function stopScanning() {
+            scanning = false;
+            startButton.disabled = false;
+            stopButton.disabled = true;
+            codeReader.reset();
+        }
+
+        function handleScanResult(resultText) {
+            const listItem = document.createElement('li');
+            listItem.innerHTML = `
+                <span class="product-info">${resultText}</span>
+                <span class="quantity-controls">
+                    <button onclick="increaseQuantity(this)">+</button>
+                    <button onclick="decreaseQuantity(this)">-</button>
+                </span>
+            `;
+            scannedProductsList.appendChild(listItem);
+        }
+
+        function increaseQuantity(button) {
+            const listItem = button.parentElement.parentElement;
+            let quantity = parseInt(listItem.dataset.quantity || '1');
+            quantity++;
+            listItem.dataset.quantity = quantity;
+            listItem.querySelector('.product-info').innerText = `${listItem.querySelector('.product-info').innerText.split(' x ')[0]} x ${quantity}`;
+        }
+
+        function decreaseQuantity(button) {
+            const listItem = button.parentElement.parentElement;
+            let quantity = parseInt(listItem.dataset.quantity || '1');
+            if (quantity > 1) {
+                quantity--;
+                listItem.dataset.quantity = quantity;
+                listItem.querySelector('.product-info').innerText = `${listItem.querySelector('.product-info').innerText.split(' x ')[0]} x ${quantity}`;
+            }
+        }
+
+        startButton.addEventListener('click', startScanning);
+        stopButton.addEventListener('click', stopScanning);
+    </script>
+</body>
+</html>
