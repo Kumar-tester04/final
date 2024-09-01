@@ -129,11 +129,16 @@
         .quantity-controls button:hover {
             background-color: #45a049;
         }
+
+        .quantity {
+            font-size: 16px;
+            padding: 0 10px;
+        }
     </style>
 </head>
 <body>
     <h1>Barcode Scanner</h1>
-    <div id="interactive">
+    <div id="interactive" class="viewport">
         <video id="video" autoplay></video>
     </div>
     <div id="controls">
@@ -141,80 +146,175 @@
         <button id="stop-button" disabled>Stop Scanning</button>
     </div>
     <div id="scanned-products-container">
+        <h2>Scanned Products</h2>
         <ul id="scanned-products"></ul>
     </div>
-    <script src="https://unpkg.com/@zxing/library@latest"></script>
+
+    <script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
     <script>
-        const codeReader = new ZXing.BrowserMultiFormatReader();
-        const videoElement = document.getElementById('video');
-        const startButton = document.getElementById('start-button');
-        const stopButton = document.getElementById('stop-button');
-        const scannedProductsList = document.getElementById('scanned-products');
-
+        let scannedBarcodes = new Set();
+        let productQuantities = {};
         let scanning = false;
+        let lastBarcode = "";
+        let debounceTimer = null;
 
-        function startScanning() {
-            scanning = true;
-            startButton.disabled = true;
-            stopButton.disabled = false;
-
-            codeReader
-                .listVideoInputDevices()
-                .then((videoInputDevices) => {
-                    const firstDeviceId = videoInputDevices[0].deviceId;
-                    return codeReader.decodeFromVideoDevice(firstDeviceId, videoElement, (result, error) => {
-                        if (result) {
-                            handleScanResult(result.text);
-                        }
-                        if (error && !(error instanceof ZXing.NotFoundException)) {
-                            console.error(error);
-                        }
-                    });
-                })
-                .catch((err) => {
-                    console.error(err);
-                });
-        }
-
-        function stopScanning() {
-            scanning = false;
-            startButton.disabled = false;
-            stopButton.disabled = true;
-            codeReader.reset();
-        }
-
-        function handleScanResult(resultText) {
-            const listItem = document.createElement('li');
-            listItem.innerHTML = `
-                <span class="product-info">${resultText}</span>
-                <span class="quantity-controls">
-                    <button onclick="increaseQuantity(this)">+</button>
-                    <button onclick="decreaseQuantity(this)">-</button>
-                </span>
-            `;
-            scannedProductsList.appendChild(listItem);
-        }
-
-        function increaseQuantity(button) {
-            const listItem = button.parentElement.parentElement;
-            let quantity = parseInt(listItem.dataset.quantity || '1');
-            quantity++;
-            listItem.dataset.quantity = quantity;
-            listItem.querySelector('.product-info').innerText = `${listItem.querySelector('.product-info').innerText.split(' x ')[0]} x ${quantity}`;
-        }
-
-        function decreaseQuantity(button) {
-            const listItem = button.parentElement.parentElement;
-            let quantity = parseInt(listItem.dataset.quantity || '1');
-            if (quantity > 1) {
-                quantity--;
-                listItem.dataset.quantity = quantity;
-                listItem.querySelector('.product-info').innerText = `${listItem.querySelector('.product-info').innerText.split(' x ')[0]} x ${quantity}`;
+        function updateProductQuantity(barcode, increment) {
+            const productElement = document.querySelector(`[data-barcode="${barcode}"] .quantity`);
+            if (productElement) {
+                productQuantities[barcode] = Math.max(0, (productQuantities[barcode] || 0) + increment);
+                productElement.textContent = productQuantities[barcode];
             }
         }
 
-        startButton.addEventListener('click', startScanning);
-        stopButton.addEventListener('click', stopScanning);
+        function displayProductDetails(barcode) {
+            const details = {
+                "123456": {
+                    name: "Soap",
+                    price: "20 INR",
+                    weight: "50g",
+                    discount: "5%",
+                    expiryDate: "2024-12-31"
+                },
+                "789012": {
+                    name: "Shampoo",
+                    price: "120 INR",
+                    weight: "200ml",
+                    discount: "10%",
+                    expiryDate: "2024-11-30"
+                }
+            };
+
+            const productList = document.getElementById('scanned-products');
+            if (details[barcode]) {
+                if (!scannedBarcodes.has(barcode)) {
+                    scannedBarcodes.add(barcode);
+                    productQuantities[barcode] = 1;
+
+                    const product = document.createElement('li');
+                    product.setAttribute('data-barcode', barcode);
+                    product.innerHTML = `
+                        <div class="product-info">
+                            <p><strong>Name:</strong> ${details[barcode].name}</p>
+                            <p><strong>Price:</strong> ${details[barcode].price}</p>
+                            <p><strong>Weight:</strong> ${details[barcode].weight}</p>
+                            <p><strong>Discount:</strong> ${details[barcode].discount}</p>
+                            <p><strong>Expiry Date:</strong> ${details[barcode].expiryDate}</p>
+                        </div>
+                        <div class="quantity-controls">
+                            <button onclick="updateProductQuantity('${barcode}', -1)">-</button>
+                            <span class="quantity">${productQuantities[barcode]}</span>
+                            <button onclick="updateProductQuantity('${barcode}', 1)">+</button>
+                        </div>
+                    `;
+                    productList.appendChild(product);
+                } else {
+                    updateProductQuantity(barcode, 1);
+                }
+            } else {
+                productList.innerHTML += `<li>Product not found for barcode: ${barcode}</li>`;
+            }
+        }
+
+        function startScanning() {
+            if (!scanning) {
+                scanning = true;
+                Quagga.start();
+                document.getElementById('start-button').disabled = true;
+                document.getElementById('stop-button').disabled = false;
+            }
+        }
+
+        function stopScanning() {
+            if (scanning) {
+                scanning = false;
+                clearTimeout(debounceTimer); // Clear the debounce timer
+                Quagga.stop();
+                document.getElementById('start-button').disabled = false;
+                document.getElementById('stop-button').disabled = true;
+
+                // Redirect to cart page after stopping scanning
+                saveCartToLocalStorage();
+                window.location.href = 'cart.html';
+            }
+        }
+
+        function saveCartToLocalStorage() {
+            const scannedProducts = Array.from(scannedBarcodes).map(barcode => {
+                return {
+                    barcode: barcode,
+                    quantity: productQuantities[barcode]
+                };
+            });
+            localStorage.setItem('scannedProducts', JSON.stringify(scannedProducts));
+        }
+
+        function setupQuagga() {
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: document.querySelector('#interactive'),
+                    constraints: {
+                        facingMode: "environment",
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    }
+                },
+                locator: {
+                    patchSize: "medium",
+                    halfSample: false
+                },
+                decoder: {
+                    readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "upc_reader"]
+                },
+                locate: true
+            }, function(err) {
+                if (err) {
+                    console.error("Initialization error:", err);
+                    alert("Error initializing the scanner: " + err.message);
+                    return;
+                }
+                console.log("Initialization finished. Ready to start scanning");
+            });
+
+            Quagga.onProcessed(function(result) {
+                if (result) {
+                    var drawingCtx = Quagga.canvas.ctx.overlay,
+                        drawingCanvas = Quagga.canvas.dom.overlay;
+
+                    if (result.boxes) {
+                        drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+                        result.boxes.filter(function (box) {
+                            return box !== result.box;
+                        }).forEach(function (box) {
+                            Quagga.ImageDebug.drawPath(box, {x: 0, y: 1}, drawingCtx, {color: "green", lineWidth: 2});
+                        });
+                    }
+
+                    if (result.box) {
+                        Quagga.ImageDebug.drawPath(result.box, {x: 0, y: 1}, drawingCtx, {color: "#00F", lineWidth: 2});
+                    }
+
+                    if (result.codeResult && result.codeResult.code) {
+                        clearTimeout(debounceTimer);
+                        debounceTimer = setTimeout(() => {
+                            lastBarcode = result.codeResult.code;
+                            displayProductDetails(lastBarcode);
+                        }, 500);
+                    }
+                }
+            });
+        }
+
+        document.getElementById('start-button').addEventListener('click', function() {
+            startScanning();
+        });
+
+        document.getElementById('stop-button').addEventListener('click', function() {
+            stopScanning();
+        });
+
+        setupQuagga();
     </script>
 </body>
 </html>
