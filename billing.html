@@ -48,64 +48,71 @@
         padding: 30px;
         text-align: center;
     }
-    .billing-content {
-        background: rgba(0, 0, 0, 0.8);
-        border-radius: 12px;
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    .content {
+        background: rgba(0, 0, 0, 0.7);
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         padding: 30px;
         width: 100%;
         max-width: 800px;
-        backdrop-filter: blur(8px);
+        backdrop-filter: blur(10px);
     }
     h2 {
         margin-bottom: 20px;
         font-family: 'Montserrat', sans-serif;
-        color: #45a049; /* Stylish green color for header */
+        color: #ffd700;
     }
-    .billing-details {
-        margin-bottom: 20px;
-        text-align: left;
-        font-size: 18px;
+    #billing-details {
+        background: rgba(0, 0, 0, 0.8);
+        border-radius: 10px;
+        padding: 20px;
+        margin: 10px 0;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
-    .billing-details p {
-        margin: 15px 0;
-        color: #fff;
+    input[type="button"] {
+        margin-top: 15px;
+        width: 100%;
+        padding: 12px;
+        box-sizing: border-box;
+        border-radius: 5px;
+        background-color: #ffd700;
+        color: #000;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
     }
-    .billing-details p strong {
-        color: #45a049; /* Stylish green color for labels */
+    input[type="button"]:hover {
+        background-color: #ffcc00;
+    }
+    #thank-you-message {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.9);
+        color: #ffd700;
+        font-size: 2em;
+        font-family: 'Montserrat', sans-serif;
+        text-align: center;
+        z-index: 1000;
+        display: none;
     }
     .qr-code {
         margin: 20px auto;
-        width: 220px;
-        height: 220px;
-        border: 3px solid #45a049; /* Stylish green border */
-        border-radius: 12px;
+        width: 200px;
+        height: 200px;
+        border: 2px solid #ffd700;
+        border-radius: 10px;
         background: #222;
-        overflow: hidden;
     }
     .qr-code img {
         width: 100%;
         height: 100%;
         object-fit: cover;
-    }
-    .complete-checkout-button {
-        margin-top: 30px;
-        width: 80%;
-        max-width: 320px;
-        padding: 15px;
-        border-radius: 8px;
-        background-color: #45a049; /* Stylish green background */
-        color: #fff;
-        border: none;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: 1.2em;
-        text-transform: uppercase;
-        transition: background-color 0.3s, transform 0.3s;
-    }
-    .complete-checkout-button:hover {
-        background-color: #388e3c; /* Darker green for hover effect */
-        transform: scale(1.05);
     }
     footer {
         background-color: rgba(0, 0, 0, 0.8);
@@ -119,27 +126,24 @@
 <header>
     <h1>Self-Billing System</h1>
     <nav>
-        <a href="dashboard.html">Dashboard</a>
-        <a href="profile.html">Profile</a>
-        <a href="settings.html">Settings</a>
-        <a href="#" onclick="logout()">Logout</a>
+        <a href="index.html">Home</a>
+        <a href="scanner.html">Scanner</a>
+        <a href="cart.html">Cart</a>
+        <a href="checkout.html">Checkout</a>
     </nav>
 </header>
 
 <main>
-    <!-- Billing container -->
-    <section class="container">
-        <div class="billing-content">
+    <section class="container" id="billing-container">
+        <div class="content">
             <h2>Billing</h2>
-            <div class="billing-details" id="billing-details">
-                <!-- Billing details will be inserted here by JavaScript -->
-            </div>
-            <div class="qr-code">
-                <img src="QR.jpeg" alt="QR Code">
-            </div>
-            <button class="complete-checkout-button" onclick="completeCheckout()">Complete Checkout</button>
+            <div id="billing-details"></div>
+            <input type="button" id="complete-checkout-button" value="Complete Checkout">
         </div>
     </section>
+
+    <!-- Thank you message -->
+    <div id="thank-you-message">Thank you for shopping with us!</div>
 </main>
 
 <footer>
@@ -147,41 +151,51 @@
 </footer>
 
 <script>
-function logout() {
-    alert("You have been logged out.");
-    window.location.href = 'login.html'; // Redirect to the login page or initial page
-}
+let scannedProducts = [
+    // Example data
+    {barcode: "123456", name: "Soap", price: 20, discount: "5%", weight: "50g"},
+    {barcode: "789012", name: "Shampoo", price: 120, discount: "10%", weight: "200ml"},
+    {barcode: "345678", name: "Toothpaste", price: 45, discount: "8%", weight: "100g"}
+];
 
-function completeCheckout() {
-    alert("Checkout completed! Thank you for shopping with us.");
-    window.location.href = 'dashboard.html'; // Redirect to the dashboard or another page
-}
+function calculateTotal() {
+    let totalAmount = 0;
+    let totalDiscount = 0;
 
-// Example function to populate billing details
-function populateBillingDetails() {
-    const billingDetails = document.getElementById('billing-details');
-    
-    // Retrieve cart data from localStorage or other source
-    // Example cart data
-    const cartItems = [
-        { name: 'Item 1', price: 200 },
-        { name: 'Item 2', price: 300 }
-    ];
-    
-    const totalAmount = cartItems.reduce((sum, item) => sum + item.price, 0);
-    const totalDiscount = 50; // Example discount
-    const finalBill = totalAmount - totalDiscount;
+    for (let product of scannedProducts) {
+        let price = product.price;
+        let discount = parseFloat(product.discount);
+        let discountedAmount = price * (discount / 100);
+        
+        totalAmount += price;
+        totalDiscount += discountedAmount;
+    }
 
-    billingDetails.innerHTML = `
-        ${cartItems.map(item => `<p><strong>${item.name}:</strong> ${item.price} INR</p>`).join('')}
+    let finalBill = totalAmount - totalDiscount;
+    document.getElementById("billing-details").innerHTML = `
         <p><strong>Total Price:</strong> ${totalAmount} INR</p>
-        <p><strong>Total Discount:</strong> ${totalDiscount} INR</p>
-        <p><strong>Final Bill:</strong> ${finalBill} INR</p>
+        <p><strong>Total Discount:</strong> ${totalDiscount.toFixed(2)} INR</p>
+        <p><strong>Final Bill:</strong> ${finalBill.toFixed(2)} INR</p>
     `;
 }
 
-// Populate billing details on page load
-window.onload = populateBillingDetails;
+function completeCheckout() {
+    document.getElementById("thank-you-message").style.display = "flex";
+    setTimeout(() => {
+        document.getElementById("thank-you-message").style.display = "none";
+        // Redirect to the home page or another page
+        window.location.href = 'index.html'; // Adjust as needed
+    }, 2000);
+}
+
+document.getElementById("complete-checkout-button").addEventListener("click", function() {
+    if (confirm("Do you want to complete the checkout?")) {
+        completeCheckout();
+    }
+});
+
+// Calculate the total amount when the page loads
+calculateTotal();
 </script>
 </body>
 </html>
