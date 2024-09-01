@@ -84,7 +84,7 @@
     <div id="cart-container">
         <ul id="cart-products"></ul>
     </div>
-    <button onclick="checkout()">Checkout</button>
+    <button onclick="moveToBilling()">Move to Billing</button>
 
     <script>
         function loadCart() {
@@ -126,10 +126,8 @@
             });
         }
 
-        function checkout() {
-            alert("Proceeding to checkout!");
-            // Clear local storage or redirect to another page
-            localStorage.removeItem('scannedProducts');
+        function moveToBilling() {
+            window.location.href = 'billing.html'; // Redirect to the billing page
         }
 
         // Load the cart when the page is loaded
