@@ -3,137 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cart</title>
+    <title>Cart - Self-Billing System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            flex-direction: column;
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
+            background-color: #333;
+            font-family: 'Roboto', sans-serif;
+            color: #fff;
         }
 
-        h1 {
+        header {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        header h1 {
+            margin: 0;
+            font-family: 'Montserrat', sans-serif;
+            color: #ffd700;
+        }
+
+        nav {
+            display: flex;
+            gap: 15px;
+        }
+
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            color: #ffd700;
+        }
+
+        .container {
+            padding: 20px;
+            text-align: center;
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        .cart-content {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 640px;
+            width: 100%;
+            color: #333;
+        }
+
+        h2 {
             color: #333;
             margin-bottom: 20px;
         }
 
-        #cart-container {
-            width: 640px;
-            max-height: 400px;
-            overflow-y: scroll;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 10px;
-            margin-bottom: 20px;
-        }
-
-        #cart-products {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        #cart-products li {
-            margin: 10px 0;
-            padding: 10px;
+        .cart-item {
+            background-color: #f9f9f9;
             border: 1px solid #ddd;
             border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: #f9f9f9;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        .product-info {
-            text-align: left;
-            flex-grow: 1;
-        }
-
-        .quantity {
-            font-size: 16px;
-            padding: 0 10px;
-        }
-
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            border: none;
+        .checkout-button {
+            margin-top: 30px;
+            padding: 15px;
             border-radius: 5px;
-            background-color: #4CAF50;
-            color: white;
+            background-color: #ffd700;
+            color: #000;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.2em;
+            text-transform: uppercase;
             transition: background-color 0.3s;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        button:hover {
-            background-color: #45a049;
+        .checkout-button:hover {
+            background-color: #ffcc00;
+        }
+
+        footer {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            text-align: center;
+            color: #ffd700;
+            width: 100%;
         }
     </style>
 </head>
 <body>
-    <h1>Your Cart</h1>
-    <div id="cart-container">
-        <ul id="cart-products"></ul>
+<header>
+    <h1>Self-Billing System</h1>
+    <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="profile.html">Profile</a>
+        <a href="settings.html">Settings</a>
+        <a href="#" onclick="logout()">Logout</a>
+    </nav>
+</header>
+
+<main class="container">
+    <div class="cart-content">
+        <h2>Your Cart</h2>
+        <!-- Example cart items -->
+        <div class="cart-item">
+            <div class="product-info">
+                <p>Item 1: 200 INR</p>
+            </div>
+        </div>
+        <div class="cart-item">
+            <div class="product-info">
+                <p>Item 2: 300 INR</p>
+            </div>
+        </div>
+        <button class="checkout-button" onclick="checkout()">Checkout</button>
     </div>
-    <button onclick="checkout()">Checkout</button>
+</main>
 
-    <script>
-        function loadCart() {
-            const scannedProducts = JSON.parse(localStorage.getItem('scannedProducts')) || [];
-            const details = {
-                "123456": {
-                    name: "Soap",
-                    price: "20 INR",
-                    weight: "50g",
-                    discount: "5%",
-                    expiryDate: "2024-12-31"
-                },
-                "789012": {
-                    name: "Shampoo",
-                    price: "120 INR",
-                    weight: "200ml",
-                    discount: "10%",
-                    expiryDate: "2024-11-30"
-                }
-            };
-            const productList = document.getElementById('cart-products');
+<footer>
+    <p>&copy; 2024 Self-Billing System. All rights reserved.</p>
+</footer>
 
-            scannedProducts.forEach(product => {
-                const productDetails = details[product.barcode];
-                if (productDetails) {
-                    const item = document.createElement('li');
-                    item.innerHTML = `
-                        <div class="product-info">
-                            <p><strong>Name:</strong> ${productDetails.name}</p>
-                            <p><strong>Price:</strong> ${productDetails.price}</p>
-                            <p><strong>Weight:</strong> ${productDetails.weight}</p>
-                            <p><strong>Discount:</strong> ${productDetails.discount}</p>
-                            <p><strong>Expiry Date:</strong> ${productDetails.expiryDate}</p>
-                        </div>
-                        <span class="quantity"><strong>Quantity:</strong> ${product.quantity}</span>
-                    `;
-                    productList.appendChild(item);
-                }
-            });
-        }
+<script>
+function logout() {
+    alert("You have been logged out.");
+    window.location.href = 'login.html'; // Redirect to the login page or initial page
+}
 
-        function checkout() {
-            alert("Proceeding to checkout!");
-            // Clear local storage or redirect to another page
-            localStorage.removeItem('scannedProducts');
-        }
-
-        // Load the cart when the page is loaded
-        window.onload = loadCart;
-    </script>
+function checkout() {
+    window.location.href = 'billing.html'; // Redirect to the billing page
+}
+</script>
 </body>
 </html>
