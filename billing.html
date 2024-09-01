@@ -24,7 +24,7 @@
         }
 
         #billing-container {
-            width: 700px;
+            width: 500px;
             background-color: #fff;
             border: none;
             border-radius: 15px;
@@ -39,35 +39,14 @@
             box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
         }
 
-        .bill-item {
-            margin: 10px 0;
-            padding: 15px;
-            border-radius: 10px;
-            background-color: #f8f9fa;
-            transition: all 0.3s ease;
-        }
-
-        .bill-item:hover {
-            background-color: #e9ecef;
-        }
-
-        .bill-item p {
-            margin: 5px 0;
-            font-size: 1rem;
-            color: #555;
-        }
-
         .bill-summary {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 2px solid #ddd;
             font-weight: bold;
             font-size: 1.2rem;
+            color: #333;
         }
 
         .bill-summary p {
             margin: 10px 0;
-            color: #333;
         }
 
         button {
@@ -98,7 +77,6 @@
 <body>
     <h1>Billing Summary</h1>
     <div id="billing-container">
-        <div id="bill-items"></div>
         <div class="bill-summary">
             <p>Total Price: <span id="total-price">0</span> INR</p>
             <p>Total Discount: <span id="total-discount">0</span> INR</p>
@@ -129,29 +107,15 @@
 
             let totalPrice = 0;
             let totalDiscount = 0;
-            let totalWeight = 0;
-            const billItems = document.getElementById('bill-items');
 
             scannedProducts.forEach(product => {
                 const productDetails = details[product.barcode];
                 if (productDetails) {
                     const itemPrice = productDetails.price * product.quantity;
                     const itemDiscount = (itemPrice * productDetails.discount) / 100;
-                    const itemWeight = productDetails.weight * product.quantity;
 
                     totalPrice += itemPrice;
                     totalDiscount += itemDiscount;
-                    totalWeight += itemWeight;
-
-                    const item = document.createElement('div');
-                    item.className = 'bill-item';
-                    item.innerHTML = `
-                        <p><strong>Name:</strong> ${productDetails.name}</p>
-                        <p><strong>Quantity:</strong> ${product.quantity}</p>
-                        <p><strong>Price:</strong> ${itemPrice} INR</p>
-                        <p><strong>Discount:</strong> ${itemDiscount.toFixed(2)} INR</p>
-                    `;
-                    billItems.appendChild(item);
                 }
             });
 
