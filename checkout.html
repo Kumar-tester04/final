@@ -94,7 +94,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <script>
         function loadCheckoutDetails() {
+            // Retrieve the total weight from localStorage
             const totalWeight = localStorage.getItem('totalWeight') || 0;
+
+            // Debugging: Log the retrieved total weight
+            console.log('Retrieved total weight:', totalWeight);
+
+            // Update the UI with the retrieved total weight
             document.getElementById('total-weight').innerText = totalWeight;
 
             // Generate QR Code with total weight
