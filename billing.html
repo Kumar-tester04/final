@@ -107,6 +107,7 @@
 
             let totalPrice = 0;
             let totalDiscount = 0;
+            let totalWeight = 0;
 
             scannedProducts.forEach(product => {
                 const productDetails = details[product.barcode];
@@ -116,6 +117,7 @@
 
                     totalPrice += itemPrice;
                     totalDiscount += itemDiscount;
+                    totalWeight += productDetails.weight * product.quantity; // Calculate total weight
                 }
             });
 
@@ -126,7 +128,7 @@
             document.getElementById('total-bill').innerText = totalBill.toFixed(2);
 
             // Save total weight to localStorage
-            localStorage.setItem('totalWeight', totalWeight);
+            localStorage.setItem('totalWeight', totalWeight); // Save the total weight
         }
 
         function confirmPayment() {
