@@ -82,7 +82,7 @@
     </style>
 </head>
 <body>
-    <h1>Checkout</h1>
+     <h1>Checkout</h1>
     <div id="checkout-container">
         <p>Total Weight of Purchased Items: <strong><span id="total-weight">0</span> grams</strong></p>
         <div id="qr-frame">
@@ -97,10 +97,10 @@
             // Retrieve the total weight from localStorage
             const totalWeight = localStorage.getItem('totalWeight') || 0;
 
-            // Debugging: Log the retrieved total weight
-            console.log('Retrieved total weight:', totalWeight);
+            // Debugging: Log the retrieved weight
+            console.log('Retrieved Total Weight in Checkout:', totalWeight);
 
-            // Update the UI with the retrieved total weight
+            // Update the UI with the retrieved weight
             document.getElementById('total-weight').innerText = totalWeight;
 
             // Generate QR Code with total weight
@@ -115,6 +115,7 @@
             window.location.href = 'thankyou.html'; // Redirect to the thank you page
         }
 
+        // Call the function to load checkout details on page load
         window.onload = loadCheckoutDetails;
     </script>
 </body>
